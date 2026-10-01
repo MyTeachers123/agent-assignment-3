@@ -8,6 +8,10 @@
 .n8n/
 n8n_data/
 
+# Node / Python
+node_modules/
+__pycache__/
+
 # OS / editor
 .DS_Store
 .idea/

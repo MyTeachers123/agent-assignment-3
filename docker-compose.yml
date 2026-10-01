@@ -18,13 +18,7 @@ services:
       # or saved credentials become unreadable.
       - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
 
-      # Optional basic auth in front of the editor UI (off by default for local dev)
-      - N8N_BASIC_AUTH_ACTIVE=${N8N_BASIC_AUTH_ACTIVE:-false}
-      - N8N_BASIC_AUTH_USER=${N8N_BASIC_AUTH_USER:-}
-      - N8N_BASIC_AUTH_PASSWORD=${N8N_BASIC_AUTH_PASSWORD:-}
-
-      # API keys exposed to AI nodes (LangChain / OpenAI / Anthropic nodes read these)
-      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      # API key for Anthropic nodes and $env references in workflows
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
 
       # Allow {{ $env.X }} in node expressions. Off by default in n8n for

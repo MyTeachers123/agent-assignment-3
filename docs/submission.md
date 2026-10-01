@@ -9,11 +9,11 @@ What to submit, where, and what the grader is looking for.
 Two equivalent ways — pick whichever fits how you work:
 
 **Option A — Fork (recommended if you already have a GitHub account)**
-1. Go to [github.com/prashantkul/agent-assignment-3](https://github.com/prashantkul/agent-assignment-3) and click **Fork**.
+1. Go to the assignment repo on GitHub and click **Fork**.
 2. Clone your fork locally and start working on `main` (or a branch — the grader looks at whichever branch you submit).
 
 **Option B — Clone + push to your own repo**
-1. `git clone git@github.com:prashantkul/agent-assignment-3.git`
+1. Clone the assignment repo from GitHub.
 2. Create a new **public** repository under your own GitHub account.
 3. `cd agent-assignment-3 && git remote set-url origin <your-new-repo-url> && git push -u origin main`
 
