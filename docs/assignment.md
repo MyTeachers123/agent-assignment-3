@@ -90,7 +90,7 @@ Each TODO is tagged with a difficulty marker and a learning objective. Sequence 
 |----|-------|------------|----|-----|
 | FN-1 | `Final Output` Code: aggregate into business-readable summary, set `next_recommended_subgoal` | medium | LO-1 | 10 |
 
-**Total: 12 TODOs, 100 points.** Difficulty mix: 6 easy / 4 medium / 3 hard.
+**Total: 13 TODOs, 100 points.** Difficulty mix: 6 easy / 5 medium / 2 hard.
 
 (LO-tag legend: LO-1 hierarchical decomposition · LO-2 classical optimization · LO-3 classical statistics · LO-4 assumption-boundary detection · LO-5 LLM-classical seam.)
 

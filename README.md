@@ -6,7 +6,7 @@ Build a hybrid planning agent in **n8n** that decomposes a high-level supply-cha
 
 ## Start here
 
-➡️ **[`docs/assignment.md`](docs/assignment.md)** — full take-home assignment spec, learning objectives, the 12 TODOs with point values, rubric.
+➡️ **[`docs/assignment.md`](docs/assignment.md)** — full take-home assignment spec, learning objectives, the 13 TODOs with point values, rubric.
 
 Then, in order:
 - [`docs/planning-primer.md`](docs/planning-primer.md) — academic framing (HTN, STRIPS, classical vs LLM, hybrid patterns)
@@ -54,7 +54,7 @@ Five components inside an HTN-shaped orchestration. The topology is given; you f
 | Supplier Performance Monitor | LLM | A 4-dimension scoring rubric with explicit weights |
 | Logistics Coordinator | LLM + classical fallback Code | Soft-constraint prompt + `pickCheapestFeasible` greedy planner |
 
-12 TODOs total (6 easy / 4 medium / 3 hard) — see [`docs/assignment.md`](docs/assignment.md) for the full inventory.
+13 TODOs total (6 easy / 5 medium / 2 hard) — see [`docs/assignment.md`](docs/assignment.md) for the full inventory.
 
 ## Pinned versions
 
