@@ -36,6 +36,7 @@ A 12-node workflow that takes an order JSON over webhook → asks Claude to clas
 ## Setup (5 min)
 
 1. n8n container running locally (`docker compose up -d` from the repo root). The workflow auto-imports on first boot.
+   If your container was already running before you pulled this week's update, re-import the corrected workflow: `docker exec n8n rm /home/node/.n8n/.imported_smart-order-router-inclass.json`, then `docker compose restart n8n` (or `docker compose up -d` if you started before the image was pinned to 2.19.5, see `docs/setup.md` section 7). Re-importing unpublishes the workflow, so do step 5 again afterwards.
 2. Open [http://localhost:5678](http://localhost:5678) → sign in to your owner account.
 3. **Smart Order Router (In-Class)** should appear in the sidebar.
 4. **Create the Anthropic credential** (one-time, shared with the homework workflow):
@@ -43,7 +44,7 @@ A 12-node workflow that takes an order JSON over webhook → asks Claude to clas
    - Name: `Anthropic API Key`
    - Header Name: `x-api-key`, Header Value: `sk-ant-...`
    - Save.
-5. **Activate the workflow** — open it, then flip the **Active** toggle in the top-right of the canvas. The webhook URL is now live.
+5. **Publish the workflow**: open it, check that the **AI Order Classification** node's Credential field shows `Anthropic API Key` (select it if not), then click **Publish** in the top-right of the canvas. n8n 2.x replaced the old Active toggle with Publish. The webhook URL is now live.
 
 ---
 
@@ -127,7 +128,7 @@ curl -sS -X POST http://localhost:5678/webhook/smart-order-router \
 
 ## Now break it (8 min)
 
-Pick at least two of the following and observe.
+Pick at least two of the following and observe. After each edit, click **Publish** again before you re-run a curl: the `/webhook/` URL runs the last published version of the workflow, not your saved edits.
 
 | Modification | What to watch |
 |--------------|---------------|
@@ -154,11 +155,13 @@ These same patterns scale to the homework supply-chain manager — the differenc
 
 | Symptom | Likely cause / fix |
 |---------|--------------------|
-| `404 webhook not registered` | Workflow isn't active. Open it, flip the Active toggle in the top-right. |
+| curl gets 404 `The requested webhook "POST smart-order-router" is not registered.` | Workflow isn't published. Open it and click **Publish** in the top-right (n8n's hint still says "activate the workflow using the toggle"; in 2.x that control is Publish). |
+| AI Order Classification fails with `Credential with ID "anthropic-credential-placeholder" does not exist for type "httpHeaderAuth".` | The published version still points at the placeholder credential from the import. Open AI Order Classification, select `Anthropic API Key` in the Credential field, then click **Publish** again. |
+| Your edit doesn't change the curl response | You saved but didn't re-publish. The `/webhook/` URL runs the last published version; click **Publish**. |
 | LLM call returns 401 | The `Anthropic API Key` credential is missing or has a bad key. Re-paste from the Anthropic console. |
 | Parse Classification fails with "Classifier did not return valid JSON. See the AI Order Classification output for the raw reply." (the curl gets `{"message":"Error in workflow"}`) | Claude wrapped the response in markdown fences or added prose. The reply is under the error message and in the AI Order Classification output. Open that node and re-emphasize "RAW JSON, no fences" in the system prompt. |
 | Inventory check always says `false` | You're using a SKU not in the mock inventory (`SKU-001`/`-002`/`-003` only). Check Normalize Order. |
-| Test orders not appearing in Executions | The workflow isn't active OR you're hitting `/webhook-test/` instead of `/webhook/`. |
+| Test orders not appearing in Executions | The workflow isn't published OR you're hitting `/webhook-test/` instead of `/webhook/`. |
 
 ---
 

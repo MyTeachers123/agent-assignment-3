@@ -474,9 +474,10 @@ workflow = {
     "pinData": {},
 }
 # NOTE: n8n's CLI import does not honor an "active": true field on the
-# workflow. After importing, students must toggle activation via the
-# editor's top-right switch before the production webhook URL works.
-# This is documented in docs/in-class.md.
+# workflow. After importing, students must click Publish (top-right of the
+# editor; n8n 2.x replaced the Active toggle) before the production webhook
+# URL works, and again after every edit. This is documented in
+# docs/in-class.md.
 
 OUT.parent.mkdir(exist_ok=True)
 OUT.write_text(json.dumps(workflow, indent=2))
