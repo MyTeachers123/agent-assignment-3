@@ -135,6 +135,9 @@ def set_node(name, slug, assignments, col, row):
                     for a in assignments
                 ]
             },
+            # Set 3.3+ drops every input field unless this is on, and Log
+            # Decision downstream needs the order, priority and stock check.
+            "includeOtherFields": True,
             "options": {},
         },
     }
