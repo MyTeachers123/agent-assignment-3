@@ -38,12 +38,11 @@ A 12-node workflow that takes an order JSON over webhook → asks Claude to clas
 1. n8n container running locally (`docker compose up -d` from the repo root). The workflow auto-imports on first boot.
    If your container was already running before you pulled this week's update, re-import the corrected workflow: `docker exec n8n rm /home/node/.n8n/.imported_smart-order-router-inclass.json`, then `docker compose restart n8n` (or `docker compose up -d` if you started before the image was pinned to 2.19.5, see `docs/setup.md` section 7). Re-importing unpublishes the workflow, so do step 5 again afterwards.
 2. Open [http://localhost:5678](http://localhost:5678) → sign in to your owner account.
-3. **Smart Order Router (In-Class)** should appear in the sidebar.
+3. **Smart Order Router (In-Class)** should appear on the **Overview** page (Workflows tab).
 4. **Create the Anthropic credential** (one-time, shared with the homework workflow):
-   - Sidebar → **Credentials** → **+ Add Credential** → **Header Auth**
-   - Name: `Anthropic API Key`
-   - Header Name: `x-api-key`, Header Value: `sk-ant-...`
-   - Save.
+   - **Overview** → **Credentials** tab → **Create credential** (**Add first credential** if the list is empty) → search **Header Auth** → **Continue**
+   - Credential name (the title at the top of the dialog): `Anthropic API Key`
+   - **Name:** `x-api-key`, **Value:** `sk-ant-...` (the field labeled Name is the header name, not the credential name). Then **Save**.
 5. **Publish the workflow**: open it, check that the **AI Order Classification** node's Credential field shows `Anthropic API Key` (select it if not), then click **Publish** in the top-right of the canvas. n8n 2.x replaced the old Active toggle with Publish. The webhook URL is now live.
 
 ---

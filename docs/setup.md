@@ -57,7 +57,7 @@ Confirm via the editor at [http://localhost:5678](http://localhost:5678). On fir
 
 The workflow's five LLM nodes all reference a Header Auth credential named **`Anthropic API Key`**. Create it once and they'll all link automatically.
 
-1. Sidebar → **Credentials** → **+ Add Credential** → **Header Auth**
+1. **Overview** → **Credentials** tab → **Create credential** (**Add first credential** if the list is empty) → search **Header Auth** → **Continue**
 2. **Credential Name:** `Anthropic API Key`  *(this name is significant — the workflow looks it up by name)*
 3. **Name:** `x-api-key`
 4. **Value:** `sk-ant-...your-key...`
@@ -126,7 +126,7 @@ docker compose up -d
 
 | Symptom | Likely cause / fix |
 |---------|--------------------|
-| Workflow not in sidebar after `up -d` | Auto-import failed silently — check `docker compose logs n8n \| grep import` |
+| Workflow not on the Overview page after `up -d` | Auto-import failed silently — check `docker compose logs n8n \| grep import` |
 | LLM node shows "Credential not found" | You haven't created the **Anthropic API Key** credential, or you named it differently |
 | Parse Plan fails with "Planner did not return valid JSON. See the Master Planner Agent output for the raw reply." | Master Planner prompt isn't constraining the output — open MP-1 and reread the schema requirements |
 | Parse Logistics Decision fails with "Logistics Coordinator did not return valid JSON", "Logistics Coordinator returned no decision object for REQ-..." or "Logistics Coordinator returned use_classical_fallback = ..." | Logistics Coordinator prompt (LG-1, LG-3) isn't constraining the output. Make it return one raw JSON object per request, with `use_classical_fallback` as a boolean `true`/`false`, not the string `"true"` |
