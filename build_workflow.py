@@ -410,7 +410,7 @@ nodes.append(http_anthropic(
 # 17. Supplier branch
 nodes.append(http_anthropic(
     "Supplier Performance Monitor", "supplier-score", SUPPLIER_SCORE_SYSTEM,
-    "'Supplier roster:\\n' + JSON.stringify($input.all().map(i => i.json), null, 2)",
+    "'Supplier roster:\\n' + JSON.stringify($('Read Suppliers JSON').all().map(i => i.json), null, 2)",
     8, 2,
 ))
 
@@ -419,14 +419,17 @@ build_requests_code = '''/**
  * Manufacture three illustrative shipping requests so the logistics branch
  * has work to do. In a real system these would come from order management;
  * we synthesize them here so the assignment is self-contained.
+ *
+ * One item per request, so the Logistics Coordinator (LLM) runs once per
+ * request. The carrier catalogue is not emitted as items: the LLM prompt and
+ * the Classical Logistics Fallback read it from "Read Shipping JSON" by name.
  */
 const requests = [
   { type: "request", request_id: "REQ-001", weight_kg:  850, origin_region: "Asia",          dest_region: "North America", deadline_days: 14, perishable: false },
   { type: "request", request_id: "REQ-002", weight_kg:   60, origin_region: "North America", dest_region: "North America", deadline_days:  3, perishable: true  },
   { type: "request", request_id: "REQ-003", weight_kg: 1200, origin_region: "Europe",        dest_region: "North America", deadline_days: 21, perishable: false },
 ];
-const options = $('Read Shipping JSON').all().map(i => ({ type: "option", ...i.json }));
-return [...requests, ...options].map(x => ({ json: x }));
+return requests.map(x => ({ json: x }));
 '''
 nodes.append(code_node("Build Shipping Requests", "build-requests", build_requests_code, 8, 3))
 nodes.append(http_anthropic(
@@ -434,12 +437,44 @@ nodes.append(http_anthropic(
     "'Request:\\n' + JSON.stringify($json, null, 2) + '\\n\\nOptions:\\n' + JSON.stringify($('Read Shipping JSON').all().map(i => i.json), null, 2)",
     9, 3,
 ))
+parse_logistics_code = '''/**
+ * Extract the Logistics Coordinator's JSON decision from each Anthropic
+ * response envelope ({ content: [{ type: "text", text: "..." }] }) so the
+ * IF node downstream can route on `use_classical_fallback`.
+ *
+ * One item per shipping request. Each output item is the original request
+ * from "Build Shipping Requests" plus the LLM's decision, so the Classical
+ * Logistics Fallback receives the request it has to solve. Only a JSON
+ * boolean `true` routes to the fallback.
+ */
+return $input.all().map((item, i) => {
+  const raw = item.json.content[0].text.trim()
+    .replace(/^```(?:json)?\\s*/i, "")
+    .replace(/\\s*```$/, "");
+  let decision;
+  try {
+    decision = JSON.parse(raw);
+  } catch (e) {
+    throw new Error("Logistics Coordinator did not return valid JSON. Got:\\n" + raw.slice(0, 500));
+  }
+  const request = $('Build Shipping Requests').itemMatching(i).json;
+  return {
+    json: {
+      ...request,
+      llm_decision: decision,
+      use_classical_fallback: decision.use_classical_fallback === true,
+    },
+    pairedItem: { item: i },
+  };
+});
+'''
+nodes.append(code_node("Parse Logistics Decision", "parse-logistics", parse_logistics_code, 10, 3))
 nodes.append({
     "id": nid("if-classical"),
     "name": "Use Classical Fallback?",
     "type": "n8n-nodes-base.if",
     "typeVersion": 2.2,
-    "position": pos(10, 3),
+    "position": pos(11, 3),
     "parameters": {
         "conditions": {
             "options": {"caseSensitive": True, "typeValidation": "strict"},
@@ -454,7 +489,7 @@ nodes.append({
     },
 })
 nodes.append(code_node("Classical Logistics Fallback", "classical-logistics",
-                       js("classical-logistics.js"), 11, 4))
+                       js("classical-logistics.js"), 12, 4))
 
 # 19. Final Merge
 nodes.append({
@@ -462,7 +497,7 @@ nodes.append({
     "name": "Merge Subgoal Results",
     "type": "n8n-nodes-base.merge",
     "typeVersion": 3,
-    "position": pos(11, 1),
+    "position": pos(13, 1),
     "parameters": {"mode": "append"},
 })
 
@@ -480,7 +515,7 @@ final_code = '''/**
 const items = $input.all().map(i => i.json);
 return [{ json: { executed_subgoal: "TODO", raw_outputs: items } }];
 '''
-nodes.append(code_node("Final Output", "final-output", final_code, 12, 1))
+nodes.append(code_node("Final Output", "final-output", final_code, 14, 1))
 
 # ---- Connections ----------------------------------------------------------
 
@@ -522,7 +557,8 @@ connect("Inventory EOQ Planner", "Inventory Exception Handler")
 connect("Inventory Exception Handler", "Merge Subgoal Results")
 connect("Supplier Performance Monitor", "Merge Subgoal Results")
 connect("Build Shipping Requests", "Logistics Coordinator (LLM)")
-connect("Logistics Coordinator (LLM)", "Use Classical Fallback?")
+connect("Logistics Coordinator (LLM)", "Parse Logistics Decision")
+connect("Parse Logistics Decision", "Use Classical Fallback?")
 connect("Use Classical Fallback?", "Classical Logistics Fallback", src_index=0)  # true
 connect("Use Classical Fallback?", "Merge Subgoal Results", src_index=1)         # false
 connect("Classical Logistics Fallback", "Merge Subgoal Results")

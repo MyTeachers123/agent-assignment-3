@@ -23,9 +23,12 @@
  */
 
 // ---- Input contract -------------------------------------------------------
-// Upstream node provides items where item.json = {month, sku, name, units_sold}
-// (the parsed sales_history.csv).
-const sales = $input.all().map(i => i.json);
+// This node's direct input is the Master Planner's plan item (via the Switch),
+// so the sales rows are read by node name from "Read Sales JSON" (the parsed
+// sales_history.csv): each row = {month, sku, name, units_sold}.
+// CSV values arrive as strings, so units_sold is converted to a number here.
+const sales = $('Read Sales JSON').all()
+  .map(i => ({ ...i.json, units_sold: Number(i.json.units_sold) }));
 
 // ---- Helpers (provided — do not change) -----------------------------------
 

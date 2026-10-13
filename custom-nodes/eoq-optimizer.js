@@ -26,9 +26,17 @@
  * Reading: docs/planning-primer.md §"STRIPS-style assumptions and where they break"
  */
 
-// Inputs are merged upstream from two reads — inventory and sales — so this
-// node sees a heterogeneous list. Partition them by which fields are present.
-const all = $input.all().map(i => i.json);
+// This node's direct input is the Master Planner's plan item (via the Switch),
+// so the rows are read by node name: inventory rows ("Read Inventory JSON")
+// and sales rows ("Read Sales JSON") are combined into one heterogeneous list.
+// Partition them by which fields are present.
+// CSV values arrive as strings: units_sold is converted to a number here;
+// inventory fields (on_hand, lead_time_days, ...) still need Number().
+const all = [
+  ...$('Read Inventory JSON').all().map(i => i.json),
+  ...$('Read Sales JSON').all()
+    .map(i => ({ ...i.json, units_sold: Number(i.json.units_sold) })),
+];
 
 // Default ordering cost (S in the EOQ formula). In production this would
 // vary by supplier and channel; we hard-code a single value so the focus

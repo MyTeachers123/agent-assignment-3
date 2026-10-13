@@ -17,17 +17,24 @@
  * Reading: docs/planning-primer.md §"Classical search and the cost of optimality"
  */
 
-// Inputs are merged upstream — shipping requests AND the catalogue of options.
+// Input items: one per shipping request the Logistics LLM routed here
+// (use_classical_fallback === true), as emitted by "Parse Logistics Decision".
+// The carrier catalogue is read by node name from "Read Shipping JSON".
 //
 // A request: { type: "request", request_id, weight_kg, origin_region,
-//              dest_region, deadline_days, perishable }
+//              dest_region, deadline_days, perishable,
+//              llm_decision, use_classical_fallback }
 // An option: { type: "option",  option_id, carrier, mode, origin_region,
 //              destination_region, transit_days, cost_per_kg,
 //              max_weight_kg, supports_perishable }
+//
+// Request fields are numbers/booleans. Option fields come from the CSV, so
+// they are strings: transit_days "32", cost_per_kg "1.20",
+// supports_perishable "true" | "false".
 
 const all = $input.all().map(i => i.json);
 const requests = all.filter(x => x.type === "request");
-const options  = all.filter(x => x.type === "option");
+const options  = $('Read Shipping JSON').all().map(i => ({ type: "option", ...i.json }));
 
 // ---- TODO — greedy carrier assignment -------------------------------------
 
