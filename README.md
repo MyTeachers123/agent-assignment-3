@@ -60,7 +60,7 @@ Five components inside an HTN-shaped orchestration. The topology is given; you f
 
 | | |
 |---|---|
-| n8n image | `docker.n8n.io/n8nio/n8n:latest` (verified against **2.19.5**) |
+| n8n image | `docker.n8n.io/n8nio/n8n:2.19.5` (pinned in `docker-compose.yml`) |
 | LLM | `claude-sonnet-4-6` |
 | Anthropic API version | `2023-06-01` |
 

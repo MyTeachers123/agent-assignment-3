@@ -8,7 +8,7 @@ Get the n8n container running, configure credentials, and confirm the workflow l
 
 | Component | Version authored against |
 |-----------|--------------------------|
-| n8n image | `docker.n8n.io/n8nio/n8n:latest` (verified against **2.19.5**) |
+| n8n image | `docker.n8n.io/n8nio/n8n:2.19.5` (pinned in `docker-compose.yml`) |
 | Anthropic model | `claude-sonnet-4-6` |
 | Anthropic API version | `2023-06-01` |
 
@@ -110,6 +110,8 @@ If you edit `workflows/supply-chain-manager-starter.json` outside the editor (yo
 docker exec n8n rm /home/node/.n8n/.imported_supply-chain-manager-starter.json
 docker compose restart n8n
 ```
+
+If you started the container before the image was pinned to `2.19.5`, pull the update, run the `docker exec ... rm` line above, then run `docker compose up -d` instead of `restart`: it switches to the pinned image and re-imports the corrected starter. Re-importing replaces the starter workflow in n8n, so export any edits you made in the editor first.
 
 To wipe everything (workflows, credentials, owner account) and start fresh:
 
