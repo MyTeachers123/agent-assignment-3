@@ -147,12 +147,16 @@ def set_node(name, slug, assignments, col, row):
 nodes = []
 
 # 1. Webhook trigger
+# webhookId is what makes the production URL /webhook/<path>. Without it, n8n
+# registers <workflow id>/<node name>/<path> instead, and the curl commands in
+# docs/in-class.md get a 404 even after the workflow is published.
 nodes.append({
     "id": nid("webhook"),
     "name": "Order Webhook",
     "type": "n8n-nodes-base.webhook",
     "typeVersion": 2,
     "position": pos(0, 1),
+    "webhookId": nid("webhook-id"),
     "parameters": {
         "httpMethod": "POST",
         "path": "smart-order-router",
