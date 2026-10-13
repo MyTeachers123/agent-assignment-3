@@ -458,7 +458,11 @@ parse_logistics_code = '''/**
  * One item per shipping request. Each output item is the original request
  * from "Build Shipping Requests" plus the LLM's decision, so the Classical
  * Logistics Fallback receives the request it has to solve. Only a JSON
- * boolean `true` routes to the fallback.
+ * boolean `true` routes to the fallback; a non-boolean value (e.g. the
+ * string "true") throws rather than silently taking the LLM path.
+ *
+ * A reply wrapped in an array is accepted: a one-element array is unwrapped,
+ * and from several decisions the one with this item's request_id is used.
  */
 return $input.all().map((item, i) => {
   const raw = item.json.content[0].text.trim()
@@ -471,11 +475,23 @@ return $input.all().map((item, i) => {
     throw new Error("Logistics Coordinator did not return valid JSON. Got:\\n" + raw.slice(0, 500));
   }
   const request = $('Build Shipping Requests').itemMatching(i).json;
+  const id = request.request_id;
+  if (Array.isArray(decision)) {
+    decision = decision.length === 1 ? decision[0] : decision.find(d => d && d.request_id === id);
+  }
+  if (!decision || typeof decision !== "object" || Array.isArray(decision)) {
+    throw new Error("Logistics Coordinator returned no decision object for " + id + ". Got:\\n" + raw.slice(0, 500));
+  }
+  const flag = decision.use_classical_fallback;
+  if (flag !== undefined && typeof flag !== "boolean") {
+    throw new Error("Logistics Coordinator returned use_classical_fallback = " + JSON.stringify(flag) +
+      " (" + typeof flag + ") for " + id + ". It must be a JSON boolean (true or false).");
+  }
   return {
     json: {
       ...request,
       llm_decision: decision,
-      use_classical_fallback: decision.use_classical_fallback === true,
+      use_classical_fallback: flag === true,
     },
     pairedItem: { item: i },
   };

@@ -127,6 +127,7 @@ docker compose up -d
 | Workflow not in sidebar after `up -d` | Auto-import failed silently — check `docker compose logs n8n \| grep import` |
 | LLM node shows "Credential not found" | You haven't created the **Anthropic API Key** credential, or you named it differently |
 | Parse Plan throws "Planner did not return valid JSON" | Master Planner prompt isn't constraining the output — open MP-1 and reread the schema requirements |
+| Parse Logistics Decision throws "Logistics Coordinator did not return valid JSON" or "returned use_classical_fallback = ..." | Logistics Coordinator prompt (LG-1, LG-3) isn't constraining the output. Make it return one raw JSON object per request, with `use_classical_fallback` as a boolean `true`/`false`, not the string `"true"` |
 | `port is already allocated` on `up -d` | Another process is on 5678 — stop it, or change the host-side port mapping in `docker-compose.yml` |
 | All LLM nodes return 401 | Bad `x-api-key` value in your credential — re-paste from the Anthropic console |
 | Code node fails with `TODO ...` | This is intended. Implement the corresponding TODO in the matching `custom-nodes/*.js`. |
