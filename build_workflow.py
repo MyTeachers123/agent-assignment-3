@@ -362,7 +362,10 @@ let plan;
 try {
   plan = JSON.parse(raw);
 } catch (e) {
-  throw new Error("Planner did not return valid JSON. Got:\\n" + raw.slice(0, 500));
+  // n8n builds the error headline from line 1 only and splits it at every
+  // colon (a trailing one gives "Unknown error"), so line 1 stays colon-free.
+  throw new Error("Planner did not return valid JSON. See the Master Planner Agent output for the raw reply." +
+    "\\nReply (first 500 chars):\\n" + raw.slice(0, 500));
 }
 
 // Pull the goal+context through so downstream branches can reference them.
@@ -472,7 +475,11 @@ return $input.all().map((item, i) => {
   try {
     decision = JSON.parse(raw);
   } catch (e) {
-    throw new Error("Logistics Coordinator did not return valid JSON. Got:\\n" + raw.slice(0, 500));
+    // n8n builds the error headline from line 1 only and splits it at every
+    // colon (a trailing one gives "Unknown error"), so keep line 1 of every
+    // error in this node colon-free.
+    throw new Error("Logistics Coordinator did not return valid JSON. See the Logistics Coordinator (LLM) output for the raw reply." +
+      "\\nReply (first 500 chars):\\n" + raw.slice(0, 500));
   }
   const request = $('Build Shipping Requests').itemMatching(i).json;
   const id = request.request_id;
@@ -480,7 +487,8 @@ return $input.all().map((item, i) => {
     decision = decision.length === 1 ? decision[0] : decision.find(d => d && d.request_id === id);
   }
   if (!decision || typeof decision !== "object" || Array.isArray(decision)) {
-    throw new Error("Logistics Coordinator returned no decision object for " + id + ". Got:\\n" + raw.slice(0, 500));
+    throw new Error("Logistics Coordinator returned no decision object for " + id + ". See the Logistics Coordinator (LLM) output for the raw reply." +
+      "\\nReply (first 500 chars):\\n" + raw.slice(0, 500));
   }
   const flag = decision.use_classical_fallback;
   if (flag !== undefined && typeof flag !== "boolean") {

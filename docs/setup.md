@@ -94,7 +94,7 @@ In the editor, with the **Supply Chain Manager (Starter)** workflow open:
 
 1. Click **Test workflow** (bottom of the canvas).
 2. The trigger fires; the four CSV reads succeed; the Build Context Summary node returns headline stats; the Master Planner LLM call goes out to Anthropic.
-3. **Expected first failure:** the Parse Plan node throws because your planner's system prompt is still a TODO and the model returns prose instead of the required JSON shape.
+3. **Expected first failure:** the Parse Plan node fails with "Planner did not return valid JSON. See the Master Planner Agent output for the raw reply." because your planner's system prompt is still a TODO and the model returns prose instead of the required JSON shape.
 
 This is correct. Open the Master Planner Agent node, fill in **MP-1** (system prompt schema), Save, and re-run. You should now get past Parse Plan; the Switch routes to whichever subgoal your planner picked; that branch executes until it hits its own TODO.
 
@@ -128,11 +128,11 @@ docker compose up -d
 |---------|--------------------|
 | Workflow not in sidebar after `up -d` | Auto-import failed silently — check `docker compose logs n8n \| grep import` |
 | LLM node shows "Credential not found" | You haven't created the **Anthropic API Key** credential, or you named it differently |
-| Parse Plan throws "Planner did not return valid JSON" | Master Planner prompt isn't constraining the output — open MP-1 and reread the schema requirements |
-| Parse Logistics Decision throws "Logistics Coordinator did not return valid JSON" or "returned use_classical_fallback = ..." | Logistics Coordinator prompt (LG-1, LG-3) isn't constraining the output. Make it return one raw JSON object per request, with `use_classical_fallback` as a boolean `true`/`false`, not the string `"true"` |
+| Parse Plan fails with "Planner did not return valid JSON. See the Master Planner Agent output for the raw reply." | Master Planner prompt isn't constraining the output — open MP-1 and reread the schema requirements |
+| Parse Logistics Decision fails with "Logistics Coordinator did not return valid JSON", "Logistics Coordinator returned no decision object for REQ-..." or "Logistics Coordinator returned use_classical_fallback = ..." | Logistics Coordinator prompt (LG-1, LG-3) isn't constraining the output. Make it return one raw JSON object per request, with `use_classical_fallback` as a boolean `true`/`false`, not the string `"true"` |
 | `port is already allocated` on `up -d` | Another process is on 5678 — stop it, or change the host-side port mapping in `docker-compose.yml` |
 | All LLM nodes return 401 | Bad `x-api-key` value in your credential — re-paste from the Anthropic console |
-| Code node fails with `TODO ...` | This is intended. Implement the corresponding TODO in the matching `custom-nodes/*.js`. |
+| Code node fails with `implement <function>()`, with `TODO [easy\|medium\|hard]` under it | This is intended. Implement the corresponding TODO in the matching `custom-nodes/*.js`. |
 
 ---
 
