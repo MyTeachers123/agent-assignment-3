@@ -8,7 +8,7 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        240,
+        0,
         380
       ],
       "parameters": {}
@@ -19,7 +19,7 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        480,
+        240,
         380
       ],
       "parameters": {
@@ -42,7 +42,7 @@
       "type": "n8n-nodes-base.readWriteFile",
       "typeVersion": 1,
       "position": [
-        720,
+        480,
         200
       ],
       "parameters": {
@@ -57,7 +57,7 @@
       "type": "n8n-nodes-base.spreadsheetFile",
       "typeVersion": 2,
       "position": [
-        960,
+        720,
         200
       ],
       "parameters": {
@@ -74,7 +74,7 @@
       "type": "n8n-nodes-base.readWriteFile",
       "typeVersion": 1,
       "position": [
-        720,
+        480,
         380
       ],
       "parameters": {
@@ -89,7 +89,7 @@
       "type": "n8n-nodes-base.spreadsheetFile",
       "typeVersion": 2,
       "position": [
-        960,
+        720,
         380
       ],
       "parameters": {
@@ -106,7 +106,7 @@
       "type": "n8n-nodes-base.readWriteFile",
       "typeVersion": 1,
       "position": [
-        720,
+        480,
         560
       ],
       "parameters": {
@@ -121,7 +121,7 @@
       "type": "n8n-nodes-base.spreadsheetFile",
       "typeVersion": 2,
       "position": [
-        960,
+        720,
         560
       ],
       "parameters": {
@@ -138,7 +138,7 @@
       "type": "n8n-nodes-base.readWriteFile",
       "typeVersion": 1,
       "position": [
-        720,
+        480,
         740
       ],
       "parameters": {
@@ -153,7 +153,7 @@
       "type": "n8n-nodes-base.spreadsheetFile",
       "typeVersion": 2,
       "position": [
-        960,
+        720,
         740
       ],
       "parameters": {
@@ -162,6 +162,20 @@
         "options": {
           "headerRow": true
         }
+      }
+    },
+    {
+      "id": "5f23167c-9549-537c-a401-3d2511ebb884",
+      "name": "Merge CSV Reads",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        960,
+        380
+      ],
+      "parameters": {
+        "mode": "append",
+        "numberInputs": 4
       }
     },
     {
@@ -671,7 +685,7 @@
       "main": [
         [
           {
-            "node": "Build Context Summary",
+            "node": "Merge CSV Reads",
             "type": "main",
             "index": 0
           }
@@ -693,9 +707,9 @@
       "main": [
         [
           {
-            "node": "Build Context Summary",
+            "node": "Merge CSV Reads",
             "type": "main",
-            "index": 0
+            "index": 1
           }
         ]
       ]
@@ -715,9 +729,9 @@
       "main": [
         [
           {
-            "node": "Build Context Summary",
+            "node": "Merge CSV Reads",
             "type": "main",
-            "index": 0
+            "index": 2
           }
         ]
       ]
@@ -734,6 +748,17 @@
       ]
     },
     "Read Shipping JSON": {
+      "main": [
+        [
+          {
+            "node": "Merge CSV Reads",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Merge CSV Reads": {
       "main": [
         [
           {

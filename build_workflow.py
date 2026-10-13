@@ -227,7 +227,7 @@ nodes.append({
     "name": "Manual Trigger",
     "type": "n8n-nodes-base.manualTrigger",
     "typeVersion": 1,
-    "position": pos(0, 1),
+    "position": pos(-1, 1),
     "parameters": {},
 })
 
@@ -243,7 +243,7 @@ nodes.append(set_node(
         ),
         "type": "string",
     }],
-    1, 1,
+    0, 1,
 ))
 
 # 3-10. Four CSV reads (binary read + spreadsheet parse)
@@ -259,7 +259,7 @@ for i, (label, slug, path) in enumerate(csv_paths):
         "name": f"Read {label} File",
         "type": "n8n-nodes-base.readWriteFile",
         "typeVersion": 1,
-        "position": pos(2, i),
+        "position": pos(1, i),
         "parameters": {
             "operation": "read",
             "fileSelector": path,
@@ -271,13 +271,26 @@ for i, (label, slug, path) in enumerate(csv_paths):
         "name": f"Read {label} JSON",
         "type": "n8n-nodes-base.spreadsheetFile",
         "typeVersion": 2,
-        "position": pos(3, i),
+        "position": pos(2, i),
         "parameters": {
             "operation": "fromFile",
             "fileFormat": "csv",
             "options": {"headerRow": True},
         },
     })
+
+# Wait for all four reads before summarizing. Wired straight into the
+# single-input Code node, n8n's v1 (depth-first) order would run Build
+# Context Summary once per read, the first time before Sales/Suppliers/
+# Shipping have executed, and its $('Read ... JSON') references would throw.
+nodes.append({
+    "id": nid("merge-csv"),
+    "name": "Merge CSV Reads",
+    "type": "n8n-nodes-base.merge",
+    "typeVersion": 3,
+    "position": pos(3, 1),
+    "parameters": {"mode": "append", "numberInputs": len(csv_paths)},
+})
 
 # 11. Build Context Summary
 context_code = '''/**
@@ -534,10 +547,11 @@ def connect(src, dst, src_index=0, dst_index=0):
 
 # Trigger -> Goal -> file reads
 connect("Manual Trigger", "Set Goal")
-for label, _, _ in csv_paths:
+for i, (label, _, _) in enumerate(csv_paths):
     connect("Set Goal", f"Read {label} File")
     connect(f"Read {label} File", f"Read {label} JSON")
-    connect(f"Read {label} JSON", "Build Context Summary")
+    connect(f"Read {label} JSON", "Merge CSV Reads", dst_index=i)
+connect("Merge CSV Reads", "Build Context Summary")
 
 # Plan
 connect("Build Context Summary", "Master Planner Agent")
