@@ -227,7 +227,10 @@ let classification;
 try {
   classification = JSON.parse(raw);
 } catch (e) {
-  throw new Error("Classifier did not return valid JSON. Got:\\n" + raw.slice(0, 500));
+  // n8n builds the error headline from line 1 only and splits it at every
+  // colon (a trailing one gives "Unknown error"), so line 1 stays colon-free.
+  throw new Error("Classifier did not return valid JSON. See the AI Order Classification output for the raw reply." +
+    "\\nReply (first 500 chars):\\n" + raw.slice(0, 500));
 }
 
 // Cross-node references pull the order + inventory back into scope.

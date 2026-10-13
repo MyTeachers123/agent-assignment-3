@@ -156,7 +156,7 @@ These same patterns scale to the homework supply-chain manager — the differenc
 |---------|--------------------|
 | `404 webhook not registered` | Workflow isn't active. Open it, flip the Active toggle in the top-right. |
 | LLM call returns 401 | The `Anthropic API Key` credential is missing or has a bad key. Re-paste from the Anthropic console. |
-| `Classifier did not return valid JSON` | Claude wrapped the response in markdown fences. Open the AI Order Classification node and re-emphasize "RAW JSON, no fences" in the system prompt. |
+| Parse Classification fails with "Classifier did not return valid JSON. See the AI Order Classification output for the raw reply." (the curl gets `{"message":"Error in workflow"}`) | Claude wrapped the response in markdown fences or added prose. The reply is under the error message and in the AI Order Classification output. Open that node and re-emphasize "RAW JSON, no fences" in the system prompt. |
 | Inventory check always says `false` | You're using a SKU not in the mock inventory (`SKU-001`/`-002`/`-003` only). Check Normalize Order. |
 | Test orders not appearing in Executions | The workflow isn't active OR you're hitting `/webhook-test/` instead of `/webhook/`. |
 
