@@ -575,7 +575,10 @@ connect("Logistics Coordinator (LLM)", "Parse Logistics Decision")
 connect("Parse Logistics Decision", "Use Classical Fallback?")
 connect("Use Classical Fallback?", "Classical Logistics Fallback", src_index=0)  # true
 connect("Use Classical Fallback?", "Merge Subgoal Results", src_index=1)         # false
-connect("Classical Logistics Fallback", "Merge Subgoal Results")
+# The fallback feeds Merge input 1, not input 0: two parents on one input make
+# n8n run Merge (and Final Output) once per parent when requests are split
+# between the two paths. On separate inputs Merge waits and runs once.
+connect("Classical Logistics Fallback", "Merge Subgoal Results", dst_index=1)
 
 connect("Merge Subgoal Results", "Final Output")
 
