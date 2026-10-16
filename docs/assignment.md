@@ -106,7 +106,7 @@ Each TODO is tagged with a difficulty marker and a learning objective. Sequence 
 4. Click **Test workflow** to run end-to-end, or **Execute Node** to test one component in isolation.
 5. Inspect the node's output panel to see whether your change behaves as expected.
 
-Expect the first run to fail — that's the design. The first algorithm Code node throws `Error: TODO ...` until you implement it. Each TODO you complete gets you one node further before the next one breaks. You are done when a single execution touches all five branches across multiple runs (vary the goal to drive the planner to different `next_subgoal` choices).
+Expect the first run to fail — that's the design. The first algorithm Code node throws `Error: TODO ...` until you implement it. Each TODO you complete gets you one node further before the next one breaks. You are done when each of the four branches has run end to end in at least one of your runs (vary the goal to drive the planner to different `next_subgoal` choices).
 
 ---
 
@@ -124,6 +124,8 @@ Per-run estimate at expected token volumes:
 Total: ~$0.085. Test workflows aggressively while developing — but each run hits at most one branch (the Switch routes to one path), so single-branch tests are well under $0.05.
 
 If your runs exceed this budget, your prompts are too verbose. Trim before tuning anything else.
+
+**Grading note (Oct 16, 2026):** the forecast and inventory branches call Claude once per SKU (15 calls per run), so those runs can cost more than $0.10. There is no deduction for that. Report your real cost per run in `analysis.md`.
 
 ---
 
@@ -144,7 +146,7 @@ See `docs/submission.md` for the full file list and process. In short you submit
 | TODO completion (per the breakdown above) | 100 baseline — partial credit per TODO |
 | Code clarity and comments | folded into per-TODO partial credit |
 | Reflective `analysis.md` quality | required to receive credit on EOQ-2, MP-2, SP-1 |
-| Demo video shows a working end-to-end run touching at least 3 of the 4 branches | required to unlock full credit on MP-1 and FN-1 |
+| Demo video shows a working end-to-end run of the branch the planner picks, plus one other branch (see `submission.md` section 5) | required to unlock full credit on MP-1 and FN-1 |
 
 Reasonable, well-reasoned departures from the suggested approaches earn full credit if you defend them in `analysis.md`. The rubric rewards understanding the trade-offs more than reproducing one specific implementation.
 
