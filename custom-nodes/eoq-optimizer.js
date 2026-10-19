@@ -17,7 +17,7 @@
  * Slow-movers make the formula numerically unstable.
  *
  * This node teaches the boundary problem: classical algorithms give crisp
- * answers exactly when their assumptions hold. Your two TODOs are
+ * answers exactly when their assumptions hold. The two pieces implemented here are
  *   (a) implement the formula
  *   (b) detect when its assumptions don't hold for a given SKU
  *
@@ -57,7 +57,7 @@ function annualDemand(salesForSku) {
   return salesForSku.reduce((acc, r) => acc + Number(r.units_sold), 0);
 }
 
-// ---- TODO #1 — the EOQ formula --------------------------------------------
+// ---- 1. The EOQ formula ---------------------------------------------------
 
 /**
  * Wilson's Economic Order Quantity:
@@ -74,11 +74,12 @@ function annualDemand(salesForSku) {
  *       and dividing by zero holding cost is meaningless.)
  */
 function eoq(D, S, H) {
-  // TODO [medium] — LO-2: classical optimization
-  throw new Error("TODO [medium]: implement eoq()");
+  // Q* = sqrt(2DS / H). Zero demand or zero holding cost -> no meaningful batch.
+  if (!(D > 0) || !(H > 0)) return 0;
+  return Math.round(Math.sqrt((2 * D * S) / H));
 }
 
-// ---- TODO #2 — assumption-violation detection -----------------------------
+// ---- 2. Assumption-violation detection ------------------------------------
 
 /**
  * EOQ assumes:
@@ -109,8 +110,39 @@ function eoq(D, S, H) {
  *       trigger multiple flags — that's expected and useful downstream.
  */
 function detectViolations(inv, salesSeries) {
-  // TODO [hard] — LO-4: knowing when classical models fail
-  throw new Error("TODO [hard]: implement detectViolations()");
+  const units = salesSeries.map(r => Number(r.units_sold));
+  if (units.length === 0) return ["no_sales_history"];
+
+  const mean = a => (a.length ? a.reduce((s, x) => s + x, 0) / a.length : 0);
+  const last3 = mean(units.slice(-3));
+  const prior9 = mean(units.slice(0, -3));
+  const first3 = mean(units.slice(0, 3));
+  const annual = units.reduce((s, x) => s + x, 0);
+  const flags = [];
+
+  // (a) Constant demand -- surge. Seasonal winter SKUs also triple in Q4, so a
+  // ratio alone would flag them; a viral SKU additionally breaks through its
+  // own previous peak (latest month > 2x the highest of the earlier months).
+  const priorPeak = Math.max(...units.slice(0, -3));
+  if (prior9 > 0 && last3 > 2.5 * prior9 && units[units.length - 1] > 2 * priorPeak) {
+    flags.push("viral_spike");
+  }
+
+  // (a) Constant demand -- structural decline (not a seasonal dip).
+  if (first3 > 0 && last3 < 0.5 * first3) flags.push("declining");
+
+  // (d) Volume too low for an "optimal batch" to mean anything.
+  if (annual < 60) flags.push("low_velocity");
+
+  // (b) Long lead time combined with volatile demand: by the time a
+  // reorder lands, demand may be very different from the average EOQ used.
+  const m = mean(units);
+  const sd = Math.sqrt(mean(units.map(x => (x - m) ** 2)));
+  const cv = m > 0 ? sd / m : 0;
+  if (Number(inv.lead_time_days) > 28 && cv > 0.5) flags.push("long_lead_time");
+
+  // (c) Perishability: not checked -- no demo SKU is perishable (see analysis.md).
+  return flags;
 }
 
 // ---- Main loop (provided) -------------------------------------------------
@@ -137,6 +169,8 @@ for (const inv of inventory) {
     name: inv.name,
     on_hand: Number(inv.on_hand),
     reorder_point: Number(inv.reorder_point),
+    lead_time_days: Number(inv.lead_time_days),
+    recent_units: series.slice(-6).map(r => Number(r.units_sold)),
     annual_demand: D,
     eoq_units: Q,
     holding_cost_per_unit_year: H,

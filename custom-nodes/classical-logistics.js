@@ -36,7 +36,7 @@ const all = $input.all().map(i => i.json);
 const requests = all.filter(x => x.type === "request");
 const options  = $('Read Shipping JSON').all().map(i => ({ type: "option", ...i.json }));
 
-// ---- TODO — greedy carrier assignment -------------------------------------
+// ---- Greedy carrier assignment --------------------------------------------
 
 /**
  * Pick the cheapest shipping option satisfying ALL hard constraints
@@ -65,8 +65,20 @@ const options  = $('Read Shipping JSON').all().map(i => ({ type: "option", ...i.
  * the LLM branch, not because we couldn't afford the optimal search.
  */
 function pickCheapestFeasible(req, options) {
-  // TODO [hard] — LO-2: classical search baselines
-  throw new Error("TODO [hard]: implement pickCheapestFeasible()");
+  // 1. Keep only options that satisfy every hard constraint.
+  const feasible = options.filter(o =>
+    o.origin_region === req.origin_region &&
+    o.destination_region === req.dest_region &&
+    Number(o.transit_days) <= Number(req.deadline_days) &&
+    Number(o.max_weight_kg) >= Number(req.weight_kg) &&
+    (req.perishable !== true || String(o.supports_perishable).toLowerCase() === "true")
+  );
+  // 2. Nothing feasible -> infeasible request.
+  if (feasible.length === 0) return null;
+  // 3. Price each survivor, 4. greedy pick: the cheapest total cost.
+  return feasible
+    .map(o => ({ ...o, total_cost_usd: Math.round(Number(req.weight_kg) * Number(o.cost_per_kg) * 100) / 100 }))
+    .reduce((best, o) => (o.total_cost_usd < best.total_cost_usd ? o : best));
 }
 
 // ---- Main loop (provided) -------------------------------------------------
